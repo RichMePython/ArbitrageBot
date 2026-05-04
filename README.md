@@ -53,6 +53,9 @@ If no API key is configured, the app records a warning and still returns HTML/br
 Serverless hosts often mount the application bundle as read-only, for example `/var/task`.
 In those environments the app stores SQLite data and screenshots under `/tmp/arbitragebot/data`.
 
+On Vercel, the root build command installs and builds the React frontend into `app/static`.
+That generated directory is intentionally not committed to git.
+
 You can override runtime paths with:
 
 ```powershell
