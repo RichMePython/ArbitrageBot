@@ -47,3 +47,16 @@ If no API key is configured, the app records a warning and still returns HTML/br
 - `GET /api/sessions/{id}` returns one session.
 - `GET /api/sessions` lists recent sessions.
 - `GET /api/logs` returns extraction logs.
+
+## Deployment Notes
+
+Serverless hosts often mount the application bundle as read-only, for example `/var/task`.
+In those environments the app stores SQLite data and screenshots under `/tmp/arbitragebot/data`.
+
+You can override runtime paths with:
+
+```powershell
+$env:DATA_DIR="/tmp/arbitragebot/data"
+$env:DB_PATH="/tmp/arbitragebot/data/reader.sqlite3"
+$env:SCREENSHOT_DIR="/tmp/arbitragebot/data/screenshots"
+```
