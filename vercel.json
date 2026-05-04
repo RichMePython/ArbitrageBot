@@ -1,9 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "INSTALL_PLAYWRIGHT_BROWSERS=1 python scripts/vercel_build.py",
-  "functions": {
-    "app/main.py": {
-      "maxDuration": 60
-    }
-  }
+  "buildCommand": "INSTALL_PLAYWRIGHT_BROWSERS=1 python scripts/vercel_build.py"
 }
