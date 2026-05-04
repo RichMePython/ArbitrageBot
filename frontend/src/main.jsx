@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const FIXED_URL = "https://betting.co.zw/sportsbook/upcoming";
+const LATEST_RESULT_KEY = "latest_scan_result";
+let inMemoryScanResult = null;
 
 function navigate(path) {
   window.history.pushState({}, "", path);
@@ -74,7 +76,7 @@ function ReaderPage() {
       if (!response.ok) {
         throw new Error(payload.detail || "Scan failed");
       }
-      localStorage.setItem("latest_session_id", payload.id);
+      rememberScanResult(payload);
       setProgress((items) => [...items, "Scan complete"]);
       navigate(`/arbitrage?session=${encodeURIComponent(payload.id)}`);
     } catch (err) {
@@ -623,12 +625,17 @@ function EmptyState({ message, action, onAction }) {
 function useSessionResult() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const sessionId = new URLSearchParams(window.location.search).get("session") || localStorage.getItem("latest_session_id");
+  const sessionId = new URLSearchParams(window.location.search).get("session") || readLatestSessionId();
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setError("");
+      const cached = readStoredScanResult(sessionId);
+      if (cached && !cancelled) {
+        setResult(cached);
+      }
+
       const url = sessionId ? `/api/sessions/${encodeURIComponent(sessionId)}` : "/api/sessions/latest";
       try {
         const response = await fetch(url);
@@ -636,9 +643,10 @@ function useSessionResult() {
         if (!response.ok) {
           throw new Error(payload.detail || "No results found");
         }
+        rememberScanResult(payload);
         if (!cancelled) setResult(payload);
       } catch (err) {
-        if (!cancelled) setError(err.message || "No results found");
+        if (!cancelled && !cached) setError(err.message || "No results found");
       }
     }
     load();
@@ -648,6 +656,58 @@ function useSessionResult() {
   }, [sessionId]);
 
   return { result, error };
+}
+
+function rememberScanResult(result) {
+  if (!result) return;
+  inMemoryScanResult = result;
+  try {
+    if (result.id) {
+      localStorage.setItem("latest_session_id", result.id);
+    }
+    localStorage.setItem(LATEST_RESULT_KEY, JSON.stringify(result));
+  } catch {
+    try {
+      sessionStorage.setItem(LATEST_RESULT_KEY, JSON.stringify(result));
+    } catch {
+      // The in-memory copy still covers immediate navigation after a scan.
+    }
+  }
+}
+
+function readStoredScanResult(sessionId) {
+  if (matchesStoredSession(inMemoryScanResult, sessionId)) {
+    return inMemoryScanResult;
+  }
+
+  for (const store of [localStorage, sessionStorage]) {
+    try {
+      const raw = store.getItem(LATEST_RESULT_KEY);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (matchesStoredSession(parsed, sessionId)) {
+        inMemoryScanResult = parsed;
+        return parsed;
+      }
+    } catch {
+      // Ignore unreadable browser storage and fall back to the API.
+    }
+  }
+  return null;
+}
+
+function matchesStoredSession(result, sessionId) {
+  if (!result) return false;
+  if (!sessionId) return true;
+  return result.id === sessionId;
+}
+
+function readLatestSessionId() {
+  try {
+    return localStorage.getItem("latest_session_id");
+  } catch {
+    return inMemoryScanResult?.id || null;
+  }
 }
 
 function flattenEvents(structured) {

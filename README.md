@@ -56,6 +56,9 @@ In those environments the app stores SQLite data and screenshots under `/tmp/arb
 On Vercel, the root build command installs and builds the React frontend into `app/static`.
 That generated directory is intentionally not committed to git.
 
+Vercel serverless storage is temporary, so persisted SQLite sessions are best-effort there.
+The dashboard keeps the returned scan result in browser storage so results can render immediately after a scan.
+
 You can override runtime paths with:
 
 ```powershell
