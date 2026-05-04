@@ -1,6 +1,6 @@
 {
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "build": "python scripts/vercel_build.py"
   }
 }

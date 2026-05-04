@@ -1,4 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd frontend && npm install && npm run build"
+  "buildCommand": "INSTALL_PLAYWRIGHT_BROWSERS=1 python scripts/vercel_build.py",
+  "functions": {
+    "app/main.py": {
+      "maxDuration": 60
+    }
+  }
 }

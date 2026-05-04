@@ -53,8 +53,9 @@ If no API key is configured, the app records a warning and still returns HTML/br
 Serverless hosts often mount the application bundle as read-only, for example `/var/task`.
 In those environments the app stores SQLite data and screenshots under `/tmp/arbitragebot/data`.
 
-On Vercel, the root build command installs and builds the React frontend into `app/static`.
-That generated directory is intentionally not committed to git.
+On Vercel, the build command installs and builds the React frontend into `app/static`.
+It also installs Playwright Chromium into `app/playwright-browsers` for the Python runtime.
+Those generated directories are intentionally not committed to git.
 
 Vercel serverless storage is temporary, so persisted SQLite sessions are best-effort there.
 The dashboard keeps the returned scan result in browser storage so results can render immediately after a scan.
